@@ -58,6 +58,8 @@ def main():
             srcpath = os.path.join(sourcedir, direntry.name)
             destpath = os.path.join(sourcedir, newdir, direntry.name)
             movefile(srcpath, destpath)
+    print('%s files moved' % filecount)
+
 
 if __name__ == '__main__':
     main()
