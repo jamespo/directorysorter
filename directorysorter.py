@@ -1,13 +1,12 @@
 #!/bin/env python
 
 # directorysorter - moves files into subdirectories a-z, [0-9], _others
-# useful for game ROMs
+# useful for game ROMs / mp3s / videos / ebooks / etc
 
 from argparse import ArgumentParser
 import os
 
 DEBUG = os.getenv('DIRDEBUG')
-SQUASH_DIGITS = True
 
 
 def get_options():
@@ -15,8 +14,10 @@ def get_options():
     parser = ArgumentParser()
     parser.add_argument("-r", help="recursive",
                         dest="recursive", action="store_true")
-    parser.add_argument("-d", help="don't squash digits", dest="squash_digits",
+    parser.add_argument("-x", help="don't squash digits", dest="squash_digits",
                         action="store_false")
+    parser.add_argument("-d", help="starting path (default PWD)", dest="startpath",
+                        default=os.getcwd())
     parser.add_argument("-n", help="minimum # of files to cleanup in recursive",
                         dest="min_recur", type=int, default=300)
     parser.set_defaults(recursive=False, squash_digits=True)
@@ -92,7 +93,7 @@ def find_dirs_to_cleanup(sourcedir, min_recursive_files):
         for mydir in dirs:
             # TODO: check if already cleaned up (don't create a/a/a)
             fullpath = os.path.join(root, mydir)
-            # check if filecount in dir > min_recursive_files
+            # check if filecount in dir >= min_recursive_files
             numfiles = count_files(fullpath)
             if numfiles >= min_recursive_files:
                 dirs_to_clean.append(fullpath)
@@ -105,13 +106,12 @@ def find_dirs_to_cleanup(sourcedir, min_recursive_files):
 def main():
     args = get_options()
     filecount = 0
-    sourcedir = os.getcwd()
     if not args.recursive:
         # single dir mode
-        filecount = cleanup_dir(sourcedir, args.squash_digits)
+        filecount = cleanup_dir(args.startpath, args.squash_digits)
         print('%s files moved' % filecount)
     else:
-        dirs_to_clean = find_dirs_to_cleanup(sourcedir, args.min_recur)
+        dirs_to_clean = find_dirs_to_cleanup(args.startpath, args.min_recur)
         for mydir in dirs_to_clean:
             filecount += cleanup_dir(mydir, args.squash_digits)
         print('%s files moved' % filecount)
